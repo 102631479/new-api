@@ -24,7 +24,7 @@ import {
   Gauge,
   DollarSign,
   Users,
-  HeartHandshake,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -173,9 +173,9 @@ export function Features(_props: FeaturesProps) {
       desc: t('Multi-user management with flexible permission allocation'),
     },
     {
-      icon: <HeartHandshake className='size-5' strokeWidth={1.5} />,
-      title: t('Open Source'),
-      desc: t('Community driven, self-hosted, and extensible'),
+      icon: <SlidersHorizontal className='size-5' strokeWidth={1.5} />,
+      title: t('Core Configuration'),
+      desc: t('Global configuration and administrative tools.'),
     },
   ]
 

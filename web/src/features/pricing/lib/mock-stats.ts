@@ -62,170 +62,6 @@ export type UptimeDayPoint = {
   outage_minutes: number
 }
 
-export type AppRanking = {
-  rank: number
-  name: string
-  description: string
-  category: string
-  growth_pct: number
-  monthly_tokens: number
-  url?: string
-  initial: string
-}
-
-const APP_TEMPLATES: Array<
-  Omit<AppRanking, 'rank' | 'monthly_tokens' | 'growth_pct' | 'initial'>
-> = [
-  {
-    name: 'Cline',
-    description: 'Autonomous coding agent inside the IDE',
-    category: 'Coding',
-    url: 'https://cline.bot',
-  },
-  {
-    name: 'Roo Code',
-    description: 'AI agent for VS Code with multi-step planning',
-    category: 'Coding',
-    url: 'https://roocode.com',
-  },
-  {
-    name: 'Open WebUI',
-    description: 'Self-hosted ChatGPT-like web interface',
-    category: 'Chat',
-    url: 'https://openwebui.com',
-  },
-  {
-    name: 'LibreChat',
-    description: 'Open-source chat platform with multi-model support',
-    category: 'Chat',
-    url: 'https://librechat.ai',
-  },
-  {
-    name: 'Lobe Chat',
-    description: 'Modern open-source chat UI with plugins',
-    category: 'Chat',
-    url: 'https://lobehub.com',
-  },
-  {
-    name: 'NextChat',
-    description: 'Cross-platform private ChatGPT client',
-    category: 'Chat',
-    url: 'https://nextchat.dev',
-  },
-  {
-    name: 'Continue',
-    description: 'Open-source AI code assistant for editors',
-    category: 'Coding',
-    url: 'https://continue.dev',
-  },
-  {
-    name: 'Aider',
-    description: 'Pair-programming agent in your terminal',
-    category: 'Coding',
-    url: 'https://aider.chat',
-  },
-  {
-    name: 'Dify',
-    description: 'LLM application development platform',
-    category: 'Platform',
-    url: 'https://dify.ai',
-  },
-  {
-    name: 'FastGPT',
-    description: 'Knowledge base orchestration and chat platform',
-    category: 'Platform',
-    url: 'https://fastgpt.in',
-  },
-  {
-    name: 'Flowise',
-    description: 'Low-code LLM workflow builder',
-    category: 'Platform',
-    url: 'https://flowiseai.com',
-  },
-  {
-    name: 'OpenInterpreter',
-    description: 'Natural-language code execution agent',
-    category: 'Coding',
-    url: 'https://openinterpreter.com',
-  },
-  {
-    name: 'Devika',
-    description: 'Open-source AI software engineer',
-    category: 'Coding',
-    url: 'https://github.com/stitionai/devika',
-  },
-  {
-    name: 'Cherry Studio',
-    description: 'Multi-model desktop chat client',
-    category: 'Chat',
-    url: 'https://cherry-ai.com',
-  },
-  {
-    name: 'AnythingLLM',
-    description: 'Workspaces around your private documents',
-    category: 'Platform',
-    url: 'https://anythingllm.com',
-  },
-  {
-    name: 'OpenHands',
-    description: 'Coding agent with browser-and-code tools',
-    category: 'Coding',
-    url: 'https://docs.all-hands.dev',
-  },
-  {
-    name: 'Cursor',
-    description: 'AI-native code editor',
-    category: 'Coding',
-    url: 'https://cursor.com',
-  },
-  {
-    name: 'Zed',
-    description: 'Multiplayer code editor with AI',
-    category: 'Coding',
-    url: 'https://zed.dev',
-  },
-  {
-    name: 'Notion AI',
-    description: 'Documents and writing assistant',
-    category: 'Productivity',
-    url: 'https://notion.so',
-  },
-  {
-    name: 'Raycast AI',
-    description: 'AI on your macOS launcher',
-    category: 'Productivity',
-    url: 'https://raycast.com',
-  },
-  {
-    name: 'Obsidian Smart Connections',
-    description: 'Connect notes with semantic search',
-    category: 'Productivity',
-  },
-  {
-    name: 'Bolt.new',
-    description: 'Prompt-to-app full-stack builder',
-    category: 'Coding',
-    url: 'https://bolt.new',
-  },
-  {
-    name: 'Pieces',
-    description: 'AI workflow companion for developers',
-    category: 'Productivity',
-    url: 'https://pieces.app',
-  },
-  {
-    name: 'AmazingAI',
-    description: 'Personal AI knowledge assistant',
-    category: 'Productivity',
-  },
-  {
-    name: 'TypingMind',
-    description: 'Better UI for ChatGPT and Claude',
-    category: 'Chat',
-    url: 'https://typingmind.com',
-  },
-]
-
 const PROFILE_BY_NAME = (name: string) => {
   const n = name.toLowerCase()
   if (/embed|rerank/.test(n)) return 'embedding'
@@ -315,8 +151,7 @@ export function buildGroupPerformance(model: PricingModel): GroupPerformance[] {
   const spec = PROFILE_SPECS[profile]
   const baseSeed = hashStringToSeed(model.model_name)
 
-  return targets
-    .slice()
+  return [...targets]
     .sort((a, b) => a.localeCompare(b))
     .map<GroupPerformance>((group) => {
       const rand = seededRandom(baseSeed ^ hashStringToSeed(group))
@@ -423,45 +258,6 @@ export function buildUptimeSeries(
   return points
 }
 
-/**
- * Build a deterministic top-apps ranking for the model. The first three apps
- * always come from the same template list; the rest is shuffled by the seed
- * so different models surface different long tails.
- */
-export function buildAppRankings(
-  model: PricingModel,
-  count = 12
-): AppRanking[] {
-  const baseSeed = hashStringToSeed(`${model.model_name}:apps`)
-  const rand = seededRandom(baseSeed)
-  const candidates = [...APP_TEMPLATES]
-  // Fisher–Yates shuffle.
-  for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1))
-    ;[candidates[i], candidates[j]] = [candidates[j], candidates[i]]
-  }
-
-  const top = candidates.slice(0, count)
-  const baseTokens = randomInRange(rand, 90_000_000, 320_000_000)
-
-  return top.map((app, idx) => {
-    const decay = Math.pow(0.78, idx)
-    const monthlyTokens = Math.round(baseTokens * decay * (0.85 + rand() * 0.3))
-    const growthPctRaw = randomInRange(rand, -28, 84)
-    const growthPct = Math.round(growthPctRaw * 10) / 10
-    return {
-      rank: idx + 1,
-      name: app.name,
-      description: app.description,
-      category: app.category,
-      url: app.url,
-      growth_pct: growthPct,
-      monthly_tokens: monthlyTokens,
-      initial: app.name.charAt(0).toUpperCase(),
-    }
-  })
-}
-
 /** Aggregate uptime over the most recent 30 days. */
 export function aggregateUptime(points: UptimeDayPoint[]): {
   uptime_pct: number
@@ -480,15 +276,6 @@ export function aggregateUptime(points: UptimeDayPoint[]): {
     outage_minutes: outageMinutes,
     uptime_pct: Math.round(uptimePct * 1000) / 1000,
   }
-}
-
-/** Compact integer formatter for token counts in apps tab. */
-export function formatTokenVolume(n: number): string {
-  if (!Number.isFinite(n) || n <= 0) return '0'
-  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`
-  return n.toString()
 }
 
 // ---------------------------------------------------------------------------
@@ -813,12 +600,20 @@ export function buildRateLimits(model: PricingModel): RateLimit[] {
   const baseSeed = hashStringToSeed(`${model.model_name}:rl`)
   const isHeavy = cat === 'image' || cat === 'video'
   const isLight = cat === 'embedding'
-  const baseRpm = isHeavy ? 60 : isLight ? 5_000 : 500
-  const baseTpm = isHeavy ? 0 : isLight ? 1_000_000 : 200_000
-  const baseRpd = isHeavy ? 1_000 : isLight ? 100_000 : 10_000
+  let baseRpm = 500
+  let baseTpm = 200_000
+  let baseRpd = 10_000
+  if (isHeavy) {
+    baseRpm = 60
+    baseTpm = 0
+    baseRpd = 1_000
+  } else if (isLight) {
+    baseRpm = 5_000
+    baseTpm = 1_000_000
+    baseRpd = 100_000
+  }
 
-  return targets
-    .slice()
+  return [...targets]
     .sort((a, b) => a.localeCompare(b))
     .map((group) => {
       const rand = seededRandom(baseSeed ^ hashStringToSeed(group))
@@ -836,7 +631,8 @@ export function buildRateLimits(model: PricingModel): RateLimit[] {
 export function formatRateLimit(value: number): string {
   if (value <= 0) return '—'
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`
-  if (value >= 1_000)
+  if (value >= 1_000) {
     return `${(value / 1_000).toFixed(value >= 10_000 ? 0 : 1)}K`
+  }
   return value.toLocaleString()
 }
